@@ -1,34 +1,34 @@
 function meny {
 
-Write-Host 1 - Hvem er jeg og hva er navnet pa dette scriptet?
-Write-Host 2 - Hvor lenge er det siden siste boot?
-Write-Host 3 - Hvor mange prosesser og trader finnes?
-Write-Host 4 - Hvor mange context switcher fant sted siste sekund?
-Write-Host 5 - Hvor stor andel av CPU-tiden ble benyttet i kernelmode og i usermode siste sekund?
-Write-Host 6 - Hvor mange interrupts fant sted siste sekund?
-Write-Host 9 - Avslutt dette scriptet
-Write-Host     Velg en funksjon: `n
+Write-Output "1 - Hvem er jeg og hva er navnet pa dette scriptet?"
+Write-Output "2 - Hvor lenge er det siden siste boot?"
+Write-Output "3 - Hvor mange prosesser og trader finnes?"
+Write-Output "4 - Hvor mange context switcher fant sted siste sekund?"
+Write-Output "5 - Hvor stor andel av CPU-tiden ble benyttet i kernelmode og i usermode siste sekund?"
+Write-Output "6 - Hvor mange interrupts fant sted siste sekund?"
+Write-Output "9 - Avslutt dette scriptet"
+Write-Output     "Velg en funksjon:"
 }
 
 
-Function Get-Uptime {
-$temp = Get-WmiObject win32_operatingsystem -ErrorAction SilentlyContinue
-$otid = (Get-Date) - $temp.ConvertToDateTime($temp.LastBootUpTime)
-Write-Output ("Oppetid: " + $otid.Days + " dager " + $otid.Hours + " timer " + $otid.Minutes + " minutter" ) `n
+Function GetUptime {
+$temp = Get-Ciminstance win32_operatingsystem
+$otid = (Get-Date) - $temp.LastBootUpTime
+Write-Output "Oppetid: $($otid.Days) dager  $($otid.Hours) timer  $($otid.Minutes) minutter"
 }
 
-Function Kernel-User-Time {
+Function KernelUserTime {
 $kerneltime = (Get-CimInstance Win32_PerfFormattedData_Counters_ProcessorInformation | Where-Object {$_.Name -eq "_Total"}).PercentPrivilegedTime
 $usertime = (Get-CimInstance Win32_PerfFormattedData_Counters_ProcessorInformation | Where-Object {$_.Name -eq "_Total"}).PercentUserTime
-Write-Host Prosent brukt i kernel time: $kerneltime og prosent brukt i user time $usertime `n
+Write-Output "Prosent brukt i kernel time: $kerneltime og prosent brukt i user time $usertime"
 }
 
-Function Interrupts-Siste-Sekund {
-Write-Host Antall interrupts siste sekund: $((Get-CimInstance Win32_PerfFormattedData_Counters_ProcessorInformation | Where-Object {$_.Name -eq "_Total"}).InterruptsPersec) `n
+Function InterruptsSisteSekund {
+Write-Output "Antall interrupts siste sekund: $((Get-CimInstance Win32_PerfFormattedData_Counters_ProcessorInformation | Where-Object {$_.Name -eq "_Total"}).InterruptsPersec)"
 }
 
-Function Kontekstvekslinger-Siste-Sekund {
-Write-Host Antall kontekstvekslinger siste sekund: $(Get-CimInstance Win32_PerfFormattedData_PerfOS_System | Select-Object -ExpandProperty ContextSwitchesPerSec | out-string)
+Function KontekstvekslingerSisteSekund {
+Write-Output "Antall kontekstvekslinger siste sekund: $(Get-CimInstance Win32_PerfFormattedData_PerfOS_System | Select-Object -ExpandProperty ContextSwitchesPerSec | out-string)"
 }
 
 
@@ -40,12 +40,12 @@ $svar = Read-Host
 
         switch ($svar)
         {
-                1 { Write-Host Jeg er $env:UserName og denne filen heter $MyInvocation.MyCommand.Name `n }
-                2 { Get-Uptime }
-                3 { Write-Host Antall prosesser: $((Get-Process).count)  Antall traader: $((Get-CimInstance win32_thread).count)`n }
-		4 { Kontekstvekslinger-Siste-Sekund }
-		5 { Kernel-User-Time }
-		6 { Interrupts-Siste-Sekund }
+                1 { Write-Output "Jeg er $env:UserName og denne filen heter $MyInvocation.MyCommand.Name" }
+                2 { GetUptime }
+                3 { Write-Output "Antall prosesser: $((Get-Process).count)  Antall traader: $((Get-CimInstance win32_thread).count)" }
+		4 { KontekstvekslingerSisteSekund }
+		5 { KernelUserTime }
+		6 { InterruptsSiste-Sekund }
         }
 } While($svar -ne 9)
 
